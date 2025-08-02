@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: casino_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # Adicione essas configurações para maior estabilidade
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d casino_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  backend:
+    build:
+      context: ./casino-backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://user:password@db:5432/casino_db
+      JWT_SECRET: supersecretjwtkey
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./casino-backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./casino-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

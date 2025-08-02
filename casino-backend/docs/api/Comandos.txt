@@ -1,0 +1,13 @@
+
+
+// ligar containers 
+docker-compose up -d   
+
+//verificar se as tabelas
+docker exec -it casino-backend-db-1 psql -U user -d casino_db -c "\dt"  
+
+// limpar o banco de dados imclindo todas as tabelas
+docker exec -it casino-backend-db-1 psql -U user -d casino_db -c "DROP TABLE IF EXISTS game_sessions, games, transactions, users CASCADE;" 
+
+//
+
